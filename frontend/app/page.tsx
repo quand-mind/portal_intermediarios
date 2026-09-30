@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Eye,
   EyeOff,
@@ -24,6 +24,7 @@ type AuthViewMode = 'login' | 'forgot-request' | 'reset-confirm' | 'logged-in';
 
 function LoginFormContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // View state
   const [viewMode, setViewMode] = useState<AuthViewMode>('login');
@@ -45,7 +46,6 @@ function LoginFormContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loggedUser, setLoggedUser] = useState<LoginResponse['user'] | null>(null);
-  const [tokenPreview, setTokenPreview] = useState<string | null>(null);
 
   // Check URL query parameters for reset token or email
   useEffect(() => {
@@ -84,7 +84,7 @@ function LoginFormContent() {
       setIsLoading(true);
       const res = await authApi.login(loginEmail.trim(), loginPassword);
       if (res.status) {
-        setSuccessMessage('¡Bienvenido al Portal de Intermediarios!');
+        setSuccessMessage('¡Bienvenido al Portal de Proveedores!');
         setLoggedUser(res.user || null);
         if (res.token) {
           localStorage.setItem('portal_token', res.token);
@@ -92,12 +92,14 @@ function LoginFormContent() {
             localStorage.setItem('portal_user', JSON.stringify(res.user));
           }
         }
-        setViewMode('logged-in');
+        // Redirección inmediata al Dashboard de Proveedores
+        router.push('/dashboard');
       } else {
         setErrorMessage(res.message || 'Error de credenciales.');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Error al conectar con el servidor.');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Error al conectar con el servidor.';
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -120,14 +122,14 @@ function LoginFormContent() {
       if (res.status) {
         setSuccessMessage(res.message);
         if (res.token) {
-          setTokenPreview(res.token);
           setResetToken(res.token);
         }
       } else {
         setErrorMessage(res.message || 'No fue posible enviar el enlace.');
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Error al procesar la solicitud.');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Error al procesar la solicitud.';
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -366,7 +368,7 @@ function LoginFormContent() {
         {viewMode === 'forgot-request' && (
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs text-blue-800 leading-relaxed">
-              Ingrese el correo electrónico registrado en <strong>seusuariosweb</strong> para enviarle el enlace o token de cambio de contraseña.
+              Ingrese el correo electrónico registrado en nuestro sistema, para enviarle el enlace de cambio de contraseña.
             </div>
 
             <div className="space-y-1.5">
@@ -409,14 +411,14 @@ function LoginFormContent() {
                 )}
               </button>
 
-              <button
+              {/* <button
                 type="button"
                 onClick={() => switchView('reset-confirm')}
                 className="w-full h-10 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.99] text-slate-700 font-medium text-xs rounded-xl flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
               >
                 <KeyRound className="w-3.5 h-3.5 text-blue-600" />
                 <span>Ya tengo un Token / Código</span>
-              </button>
+              </button> */}
             </div>
           </form>
         )}

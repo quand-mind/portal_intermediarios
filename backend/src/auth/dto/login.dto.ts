@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class LoginDto {
   @ApiProperty({
     example: 'usuario@lamundialdeseguros.com',
-    description: 'Correo electrónico (xcorreo) o nombre de usuario (xlogin) registrado en seusuariosweb',
+    description: 'Correo electrónico y/o usuario registrado',
   })
   @IsNotEmpty({ message: 'El correo o usuario es requerido' })
   @IsString()

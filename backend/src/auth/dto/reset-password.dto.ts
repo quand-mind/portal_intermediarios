@@ -20,7 +20,7 @@ export class ResetPasswordDto {
 
   @ApiProperty({
     example: 'NuevaClave2026.',
-    description: 'Nueva contraseña que se registrará en seusuariosweb',
+    description: 'Nueva contraseña que se registrará para este usuario',
   })
   @IsNotEmpty({ message: 'La nueva contraseña es requerida' })
   @IsString()
