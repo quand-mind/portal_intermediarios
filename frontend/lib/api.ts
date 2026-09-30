@@ -17,6 +17,7 @@ export interface LoginResponse {
     xapellido?: string;
     xcorreo?: string;
     xlogin?: string;
+    cid?: string;
     ccorredor?: string;
     cagencia?: number;
     cproductor?: number;

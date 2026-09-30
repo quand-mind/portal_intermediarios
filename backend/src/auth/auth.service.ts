@@ -34,7 +34,7 @@ export class AuthService {
     private readonly mailService: MailService,
     @Optional() private readonly configService?: ConfigService,
     @Optional() @Inject(EXELIXI_PARTNER_HOST) private readonly host?: ExelixiPartnerHost,
-  ) {}
+  ) { }
 
   private getJwtSecret(): string {
     return (
@@ -249,46 +249,31 @@ export class AuthService {
     try {
       const pool = await this.databaseService.getPool();
 
-      // Consultar usuario por xcorreo o por xlogin
+      // Consultar usuario por xcorreo o por xlogin con join a maclient
       const result = await pool
         .request()
         .input('identifier', sql.VarChar(200), cleanIdentifier)
         .query(`
           SELECT TOP 1
-            cusuario,
-            u_version,
-            xnombre,
-            xapellido,
-            xlogin,
-            xcontrasena,
-            xusuario,
-            xcorreo,
-            cdepartamento,
-            crol,
-            ccorredor,
-            cagencia,
-            cproductor,
-            cusuariopadre,
-            ccanalalt,
-            cscanalalt,
-            istatus,
-            bcambioclave
-          FROM seusuariosweb
-          WHERE LOWER(LTRIM(RTRIM(xcorreo))) = @identifier
-             OR LOWER(LTRIM(RTRIM(xlogin))) = @identifier
-          ORDER BY cusuario DESC
+            u.cusuario,
+            u.xnombre,
+            u.xusuario,
+            u.xcorreo,
+            u.xcontrasena,
+            TRIM(m.cid) AS cid
+          FROM seusuariosweb u
+          INNER JOIN maclient m 
+            ON m.cci_rif = TRY_CAST(LTRIM(RTRIM(u.xusuario)) AS INT)
+          WHERE (LOWER(LTRIM(RTRIM(u.xcorreo))) = @identifier OR LOWER(LTRIM(RTRIM(u.xlogin))) = @identifier)
+            AND u.istatus = 'V'
+          ORDER BY u.cusuario DESC
         `);
 
       if (!result.recordset || result.recordset.length === 0) {
-        throw new UnauthorizedException('Credenciales inválidas (usuario no encontrado).');
+        throw new UnauthorizedException('Credenciales inválidas (usuario no encontrado o inactivo).');
       }
 
       const user = result.recordset[0];
-
-      // Validar si el usuario está activo si tiene status
-      if (user.istatus && user.istatus.trim().toUpperCase() === 'I') {
-        throw new UnauthorizedException('El usuario se encuentra inactivo.');
-      }
 
       // Validar contraseña (soporta texto plano, MD5 y MD5 con salt LMS)
       const isMatch = this.verifyPassword(dto.password, user.xcontrasena);
@@ -299,7 +284,7 @@ export class AuthService {
 
       // Generar token con email, id (obtenido de xusuario) y type: 'logged'
       const payload: JwtAuthPayload = {
-        email: user.xcorreo || user.xlogin,
+        email: user.xcorreo || cleanIdentifier,
         id: user.xusuario,
         type: 'logged',
       };
@@ -313,25 +298,16 @@ export class AuthService {
         message: 'Inicio de sesión exitoso.',
         token,
         data: {
-          email: user.xcorreo || user.xlogin,
+          email: user.xcorreo || cleanIdentifier,
           id: user.xusuario,
           type: 'logged',
         },
         user: {
           cusuario: user.cusuario,
-          xusuario: user.xusuario,
           xnombre: user.xnombre,
-          xapellido: user.xapellido,
+          xusuario: user.xusuario,
           xcorreo: user.xcorreo,
-          xlogin: user.xlogin,
-          ccorredor: user.ccorredor,
-          cagencia: user.cagencia,
-          cproductor: user.cproductor,
-          ccanalalt: user.ccanalalt,
-          cscanalalt: user.cscanalalt,
-          cdepartamento: user.cdepartamento,
-          crol: user.crol,
-          bcambioclave: user.bcambioclave,
+          cid: user.cid,
           type: 'logged',
         },
       };
