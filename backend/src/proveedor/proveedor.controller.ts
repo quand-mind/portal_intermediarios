@@ -26,8 +26,27 @@ export class ProveedorController {
   @Get('recibos')
   @ApiOperation({ summary: 'Listado de recibos del proveedor' })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async getRecibos(@Query('limit') limit?: number) {
-    return await this.proveedorService.getRecibos(limit ? Number(limit) : 50);
+  @ApiQuery({ name: 'cci_rif', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'iestadorec', required: false, type: String })
+  @ApiQuery({ name: 'fdesde', required: false, type: String })
+  @ApiQuery({ name: 'fhasta', required: false, type: String })
+  async getRecibos(
+    @Query('limit') limit?: number,
+    @Query('cci_rif') cci_rif?: number,
+    @Query('search') search?: string,
+    @Query('iestadorec') iestadorec?: string,
+    @Query('fdesde') fdesde?: string,
+    @Query('fhasta') fhasta?: string,
+  ) {
+    return await this.proveedorService.getRecibos(
+      limit ? Number(limit) : 100,
+      cci_rif ? Number(cci_rif) : undefined,
+      search,
+      iestadorec,
+      fdesde,
+      fhasta,
+    );
   }
 
   @Get('clientes')
@@ -51,9 +70,20 @@ export class ProveedorController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Acción: Consulta de Recibos',
-    description: 'Busca recibos por número de recibo, número de póliza o cliente.',
+    description: 'Busca recibos por número de recibo, número de póliza, cliente, fechas y estatus.',
   })
-  async consultarRecibos(@Body() body: { search?: string; cnpoliza?: string }) {
+  async consultarRecibos(
+    @Body()
+    body: {
+      search?: string;
+      cnpoliza?: string;
+      iestadorec?: string;
+      cci_rif?: number;
+      fdesde?: string;
+      fhasta?: string;
+      limit?: number;
+    },
+  ) {
     return await this.proveedorService.consultarRecibos(body);
   }
 }

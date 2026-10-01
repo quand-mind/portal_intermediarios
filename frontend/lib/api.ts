@@ -148,8 +148,22 @@ export const proveedorApi = {
   /**
    * Obtener listado de recibos
    */
-  async getRecibos(limit = 20) {
-    const res = await fetch(`${API_BASE_URL}/proveedor/recibos?limit=${limit}`);
+  async getRecibos(
+    limit = 100,
+    cci_rif?: number,
+    search?: string,
+    iestadorec?: string,
+    fdesde?: string,
+    fhasta?: string,
+  ) {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    if (cci_rif) params.append('cci_rif', cci_rif.toString());
+    if (search) params.append('search', search);
+    if (iestadorec) params.append('iestadorec', iestadorec);
+    if (fdesde) params.append('fdesde', fdesde);
+    if (fhasta) params.append('fhasta', fhasta);
+    const res = await fetch(`${API_BASE_URL}/proveedor/recibos?${params.toString()}`);
     return await res.json();
   },
 
@@ -176,11 +190,18 @@ export const proveedorApi = {
   /**
    * Acción: Consultar Recibos
    */
-  async consultarRecibos(search?: string, cnpoliza?: string) {
+  async consultarRecibos(
+    search?: string,
+    cnpoliza?: string,
+    cci_rif?: number,
+    iestadorec?: string,
+    fdesde?: string,
+    fhasta?: string,
+  ) {
     const res = await fetch(`${API_BASE_URL}/proveedor/consultar-recibos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ search, cnpoliza }),
+      body: JSON.stringify({ search, cnpoliza, cci_rif, iestadorec, fdesde, fhasta }),
     });
     return await res.json();
   },
