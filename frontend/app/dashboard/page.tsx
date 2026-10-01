@@ -183,7 +183,7 @@ function DashboardContent() {
         <div>
           {/* Brand Logo Header */}
           <div className="p-5 border-b border-slate-800/80 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-md">
+            <div className="w-10 h-10 flex items-center justify-center shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://sys2000.lamundialdeseguros.com/assets/img/mundial_logo.png"
