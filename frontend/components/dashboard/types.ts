@@ -50,3 +50,17 @@ export interface DashboardMetrics {
   clientes: { total: number; label: string; status: string };
   sistema: { status: string; sincronizacion: string; ambiente: string };
 }
+
+export const formatDate = (dateStr?: string): string => {
+  if (!dateStr) return '---';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  } catch {
+    return dateStr;
+  }
+};

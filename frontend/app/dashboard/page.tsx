@@ -18,20 +18,8 @@ import {
 function DashboardContent() {
   const router = useRouter();
 
-  // User state from localStorage
-  const [currentUser] = useState<LoginResponse['user'] | null>(() => {
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('portal_user');
-      if (savedUser) {
-        try {
-          return JSON.parse(savedUser);
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  });
+  // User state from localStorage loaded on client mount to avoid hydration mismatch
+  const [currentUser, setCurrentUser] = useState<LoginResponse['user'] | null>(null);
 
   const [activeTab, setActiveTab] = useState<DashboardTab>('inicio');
 
@@ -68,12 +56,20 @@ function DashboardContent() {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchData = async () => {
+    const init = async () => {
+      const savedUser = typeof window !== 'undefined' ? localStorage.getItem('portal_user') : null;
+      if (savedUser && isMounted) {
+        try {
+          setCurrentUser(JSON.parse(savedUser));
+        } catch {
+          // ignore
+        }
+      }
       if (isMounted) {
         await loadDashboardData();
       }
     };
-    fetchData();
+    init();
     return () => {
       isMounted = false;
     };

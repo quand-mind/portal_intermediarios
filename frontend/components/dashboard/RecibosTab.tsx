@@ -9,15 +9,13 @@ import {
   RefreshCw,
   FileCheck,
   AlertCircle,
-  Calendar,
   Filter,
   CheckCircle2,
   Clock,
-  XCircle,
   DollarSign,
 } from 'lucide-react';
 import { proveedorApi, LoginResponse } from '@/lib/api';
-import { ReciboRecord } from './types';
+import { ReciboRecord, formatDate } from './types';
 
 interface RecibosTabProps {
   currentUser?: LoginResponse['user'] | null;
@@ -380,8 +378,8 @@ export const RecibosTab: React.FC<RecibosTabProps> = ({
                         {item.xplan || 'Riesgos Generales'}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px] text-slate-500">
-                        {fechaDesde ? new Date(fechaDesde).toLocaleDateString() : '---'}
-                        {fechaHasta ? ` - ${new Date(fechaHasta).toLocaleDateString()}` : ''}
+                        {fechaDesde ? formatDate(fechaDesde) : '---'}
+                        {fechaHasta ? ` - ${formatDate(fechaHasta)}` : ''}
                       </td>
                       <td className="py-3 px-4 font-semibold text-emerald-700 font-mono">
                         {item.mprimatotal ? `$${Number(item.mprimatotal).toFixed(2)}` : '$0.00'}

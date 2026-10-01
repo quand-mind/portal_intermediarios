@@ -11,7 +11,7 @@ import {
   UserX,
 } from 'lucide-react';
 import { proveedorApi, LoginResponse } from '@/lib/api';
-import { PolizaRecord } from './types';
+import { PolizaRecord, formatDate } from './types';
 
 interface AsegurabilidadTabProps {
   currentUser: LoginResponse['user'] | null;
@@ -196,7 +196,7 @@ export const AsegurabilidadTab: React.FC<AsegurabilidadTabProps> = ({ currentUse
                           Vigencia Desde:
                         </span>
                         <span className="font-mono text-slate-600">
-                          {item.fdesde ? new Date(item.fdesde).toLocaleDateString() : '---'}
+                          {formatDate(item.fdesde)}
                         </span>
                       </div>
 
@@ -205,7 +205,7 @@ export const AsegurabilidadTab: React.FC<AsegurabilidadTabProps> = ({ currentUse
                           Vigencia Hasta:
                         </span>
                         <span className="font-mono font-semibold text-slate-800">
-                          {item.fhasta ? new Date(item.fhasta).toLocaleDateString() : 'Indefinida'}
+                          {item.fhasta ? formatDate(item.fhasta) : 'Indefinida'}
                         </span>
                       </div>
                     </div>
