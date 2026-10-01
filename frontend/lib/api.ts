@@ -18,6 +18,7 @@ export interface LoginResponse {
     xcorreo?: string;
     xlogin?: string;
     cid?: string;
+    cci_rif?: number;
     ccorredor?: string;
     cagencia?: number;
     cproductor?: number;
@@ -163,11 +164,11 @@ export const proveedorApi = {
   /**
    * Acción: Consultar Asegurabilidad
    */
-  async consultarAsegurabilidad(search: string) {
+  async consultarAsegurabilidad(search: string, cci_rif?: number) {
     const res = await fetch(`${API_BASE_URL}/proveedor/consultar-asegurabilidad`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ search }),
+      body: JSON.stringify({ search, cci_rif }),
     });
     return await res.json();
   },

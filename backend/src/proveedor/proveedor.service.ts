@@ -6,7 +6,7 @@ import { DatabaseService } from '../database/database.service';
 export class ProveedorService {
   private readonly logger = new Logger(ProveedorService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   /**
    * Obtiene métricas generales del proveedor (Pólizas, Recibos, Clientes)
@@ -195,41 +195,48 @@ export class ProveedorService {
   /**
    * Acción 1: Consultar Asegurabilidad
    */
-  async consultarAsegurabilidad(cedulaOrPoliza: string) {
+  async consultarAsegurabilidad(cedulaOrPoliza: string, cci_rif?: number) {
     const cleanSearch = cedulaOrPoliza.trim();
     try {
       const pool = await this.databaseService.getPool();
       const query = `
-        SELECT TOP 10
+        SELECT
           a.cnpoliza,
           a.fanopol,
           a.fmespol,
           a.fdesde,
           a.fhasta,
           a.iestado,
-          a.mprimatotal,
           b.xcliente AS xasegurado,
           TRIM(b.cid) AS cidasegurado,
-          b.xcorreo,
-          b.xtelefono_hab,
+          g.xcorreo,
+          f.xtelefono,
           b.fnacimiento,
-          b.csexo,
-          e.xplan,
+          b.isexo,
+          coalesce(h.xplan, e.xplan) as xplan,
           CASE 
             WHEN a.iestado = 'V' AND (a.fhasta >= GETDATE() OR a.fhasta IS NULL) THEN 'Asegurable / Activo'
             WHEN a.iestado = 'N' THEN 'Anulado / No Asegurable'
             ELSE 'En Revisión'
           END AS estatus_asegurabilidad
-        FROM adpoliza a
+        FROM adproveedor x 
+        INNER JOIN adpoliza a on a.cpoliza = x.cpoliza and a.fanopol = x.fanopol and a.fmespol = x.fmespol
         INNER JOIN maclient b ON a.casegurado = b.cci_rif
+        LEFT JOIN maclient_tel f ON b.cci_rif = f.cci_rif
+        LEFT JOIN maclient_correo g ON b.cci_rif = g.cci_rif
         LEFT JOIN maplanes e ON a.cplan = e.cplan AND a.cramo = e.cramo
-        WHERE TRIM(b.cid) LIKE '%' + @search + '%'
-           OR a.cnpoliza LIKE '%' + @search + '%'
-           OR b.xcliente LIKE '%' + @search + '%'
+        LEFT JOIN maplanes_per h ON a.cplan = h.cplan AND a.cramo = h.cramo
+        WHERE (@cci_rif IS NULL OR x.cci_rif = @cci_rif)
+          AND (
+            TRIM(b.cid) LIKE '%' + @search + '%'
+            OR a.cnpoliza LIKE '%' + @search + '%'
+            OR b.xcliente LIKE '%' + @search + '%'
+          )
         ORDER BY a.fanopol DESC
       `;
       const result = await pool
         .request()
+        .input('cci_rif', sql.Int, cci_rif ? Number(cci_rif) : null)
         .input('search', sql.VarChar(100), cleanSearch)
         .query(query);
 

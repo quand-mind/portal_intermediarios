@@ -154,7 +154,8 @@ function DashboardContent() {
     setIsSearchingAseg(true);
     setHasSearchedAseg(true);
     try {
-      const res = await proveedorApi.consultarAsegurabilidad(asegurabilidadSearch.trim());
+      const cciRif = currentUser?.cci_rif ? Number(currentUser.cci_rif) : (currentUser?.xusuario ? Number(currentUser.xusuario) : undefined);
+      const res = await proveedorApi.consultarAsegurabilidad(asegurabilidadSearch.trim(), cciRif);
       setAsegurabilidadResults(res.data || []);
     } catch (err) {
       console.error(err);
@@ -217,11 +218,10 @@ function DashboardContent() {
             {/* Item 1: Inicio */}
             <button
               onClick={() => setActiveTab('inicio')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'inicio'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'inicio'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                   : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-              }`}
+                }`}
             >
               <div className={`p-1 rounded-lg ${activeTab === 'inicio' ? 'bg-white/20' : 'bg-slate-800'}`}>
                 <Building2 className="w-3.5 h-3.5" />
@@ -232,11 +232,10 @@ function DashboardContent() {
             {/* Item 2: Recibos */}
             <button
               onClick={() => setActiveTab('recibos')}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'recibos'
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'recibos'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                   : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`p-1 rounded-lg ${activeTab === 'recibos' ? 'bg-white/20' : 'bg-slate-800'}`}>
@@ -252,11 +251,10 @@ function DashboardContent() {
             {/* Item 3: Clientes */}
             <button
               onClick={() => setActiveTab('clientes')}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'clientes'
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'clientes'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                   : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`p-1 rounded-lg ${activeTab === 'clientes' ? 'bg-white/20' : 'bg-slate-800'}`}>
@@ -272,11 +270,10 @@ function DashboardContent() {
             {/* Item 4: Asegurabilidad (Dedicated View) */}
             <button
               onClick={() => setActiveTab('asegurabilidad')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'asegurabilidad'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${activeTab === 'asegurabilidad'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                   : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
-              }`}
+                }`}
             >
               <div className={`p-1 rounded-lg ${activeTab === 'asegurabilidad' ? 'bg-white/20' : 'bg-slate-800'}`}>
                 <HeartPulse className="w-3.5 h-3.5 text-rose-400" />
@@ -554,11 +551,10 @@ function DashboardContent() {
                         </td>
                         <td className="py-2.5 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                              item.iestadorec === 'P'
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${item.iestadorec === 'P'
                                 ? 'bg-amber-100 text-amber-800'
                                 : 'bg-emerald-100 text-emerald-800'
-                            }`}
+                              }`}
                           >
                             {item.iestadorec === 'P' ? 'Pendiente' : 'Cobrado'}
                           </span>
@@ -671,11 +667,10 @@ function DashboardContent() {
                             </div>
 
                             <div
-                              className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
-                                isAsegurable
+                              className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${isAsegurable
                                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                                   : 'bg-rose-100 text-rose-800 border border-rose-200'
-                              }`}
+                                }`}
                             >
                               {isAsegurable ? (
                                 <>
@@ -756,75 +751,6 @@ function DashboardContent() {
               </div>
             )}
 
-            {/* Pólizas Vigentes en el Sistema (Tabla de Referencia) */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-[#0f274a]">
-                    Pólizas Disponibles para Validación
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Listado de pólizas cargadas en la base de datos de La Mundial de Seguros
-                  </p>
-                </div>
-                <span className="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-lg">
-                  {polizas.length} Registros
-                </span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px]">
-                    <tr>
-                      <th className="py-3 px-4">Nº Póliza</th>
-                      <th className="py-3 px-4">Asegurado</th>
-                      <th className="py-3 px-4">Cédula</th>
-                      <th className="py-3 px-4">Plan</th>
-                      <th className="py-3 px-4">Vigencia Hasta</th>
-                      <th className="py-3 px-4">Estatus</th>
-                      <th className="py-3 px-4 text-right">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
-                    {polizas.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-blue-700">
-                          #{item.cnpoliza}
-                        </td>
-                        <td className="py-3 px-4 font-medium uppercase">{item.xasegurado || '---'}</td>
-                        <td className="py-3 px-4 font-mono text-slate-500">{item.cidasegurado || '---'}</td>
-                        <td className="py-3 px-4">{item.xplan || 'Plan General'}</td>
-                        <td className="py-3 px-4 font-mono">
-                          {item.fhasta ? new Date(item.fhasta).toLocaleDateString() : '---'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                              item.iestado === 'V'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-rose-100 text-rose-800'
-                            }`}
-                          >
-                            {item.iestado === 'V' ? 'Vigente' : 'Inactiva'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => {
-                              setAsegurabilidadSearch(item.cidasegurado || item.cnpoliza || '');
-                              handleSearchAsegurabilidad();
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold transition-colors cursor-pointer"
-                          >
-                            Consultar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         )}
 
@@ -914,8 +840,8 @@ function DashboardContent() {
                       .filter((r) =>
                         tableFilter
                           ? `${r.cnrecibo} ${r.cnpoliza} ${r.xasegurado} ${r.cidasegurado}`
-                              .toLowerCase()
-                              .includes(tableFilter.toLowerCase())
+                            .toLowerCase()
+                            .includes(tableFilter.toLowerCase())
                           : true,
                       )
                       .map((item, idx) => (
@@ -931,11 +857,10 @@ function DashboardContent() {
                           </td>
                           <td className="py-3 px-4">
                             <span
-                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                                item.iestadorec === 'P'
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${item.iestadorec === 'P'
                                   ? 'bg-amber-100 text-amber-800'
                                   : 'bg-emerald-100 text-emerald-800'
-                              }`}
+                                }`}
                             >
                               {item.iestadorec === 'P' ? 'Pendiente' : 'Cobrado'}
                             </span>
@@ -994,8 +919,8 @@ function DashboardContent() {
                       .filter((c) =>
                         tableFilter
                           ? `${c.cid} ${c.xcliente} ${c.xcorreo}`
-                              .toLowerCase()
-                              .includes(tableFilter.toLowerCase())
+                            .toLowerCase()
+                            .includes(tableFilter.toLowerCase())
                           : true,
                       )
                       .map((item, idx) => (

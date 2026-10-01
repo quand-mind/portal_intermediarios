@@ -5,7 +5,7 @@ import { ProveedorService } from './proveedor.service';
 @ApiTags('Proveedor')
 @Controller('proveedor')
 export class ProveedorController {
-  constructor(private readonly proveedorService: ProveedorService) {}
+  constructor(private readonly proveedorService: ProveedorService) { }
 
   @Get('metrics')
   @ApiOperation({
@@ -43,8 +43,8 @@ export class ProveedorController {
     summary: 'Acción: Consultar Asegurabilidad',
     description: 'Valida la cobertura, estatus y vigencia de un asegurado por cédula, RIF o número de póliza.',
   })
-  async consultarAsegurabilidad(@Body() body: { search: string }) {
-    return await this.proveedorService.consultarAsegurabilidad(body.search || '');
+  async consultarAsegurabilidad(@Body() body: { search: string; cci_rif?: number }) {
+    return await this.proveedorService.consultarAsegurabilidad(body.search || '', body.cci_rif ? Number(body.cci_rif) : undefined);
   }
 
   @Post('consultar-recibos')

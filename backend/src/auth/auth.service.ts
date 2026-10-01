@@ -260,7 +260,8 @@ export class AuthService {
             u.xusuario,
             u.xcorreo,
             u.xcontrasena,
-            TRIM(m.cid) AS cid
+            TRIM(m.cid) AS cid,
+            m.cci_rif
           FROM seusuariosweb u
           INNER JOIN maclient m 
             ON m.cci_rif = TRY_CAST(LTRIM(RTRIM(u.xusuario)) AS INT)
@@ -308,6 +309,7 @@ export class AuthService {
           xusuario: user.xusuario,
           xcorreo: user.xcorreo,
           cid: user.cid,
+          cci_rif: user.cci_rif ? Number(user.cci_rif) : (Number(user.xusuario) || undefined),
           type: 'logged',
         },
       };
